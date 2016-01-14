@@ -156,7 +156,7 @@ public class StatManager : MonoBehaviour {
     //MoveCamel
     void MoveCamel(Camel camel, int dice, bool isFirstCamel = true)
     {
-        Debug.Log("Dice: " + camel.name + " avance de " + dice);
+        //Debug.Log("Dice: " + camel.name + " avance de " + dice);
         camel.newPos = camel.newPos + dice;
         
         if (camel.newCamelsOnTop != null)
@@ -227,18 +227,15 @@ public class StatManager : MonoBehaviour {
 
     void RemoveCamelOnTop(Camel camel)
     {
-        InfoCamel("preREMOVE");
         for (int i = 0; i < allCamels.Count; i++)
         {
             if (allCamels[i].newCamelsOnTop == camel)
             {
                 //LE PROBLEME EST ICI
                 allCamels[i].newCamelsOnTop = null;
-                Debug.Log(camel.name + " est pu sur " + allCamels[i].name);
-                
             }
         }
-        InfoCamel("REMOVE");
+        
     }
 
 
@@ -308,12 +305,15 @@ public class StatManager : MonoBehaviour {
     //Log Camel Info
     void InfoCamel(string text)
     {
-        string camelInfo = text;
+        string camelInfo = allCamels.Count + text;
         for(int i = 0; i < allCamels.Count; i++)
         {       
             camelInfo += " - " + allCamels[i].name + " " + allCamels[i].newPos + " ";
             if (allCamels[i].camelOnTopAtStart != null)
-                camelInfo += "sous " + allCamels[i].camelOnTopAtStart.name;         
+                camelInfo += "sous *" + allCamels[i].camelOnTopAtStart.name + "*";
+
+            if (allCamels[i].newCamelsOnTop != null)
+                camelInfo += "sous " + allCamels[i].newCamelsOnTop.name;
         }
 
         Debug.Log(camelInfo);
@@ -322,8 +322,9 @@ public class StatManager : MonoBehaviour {
     void SortCamelInOrderPos()
     {
         List<Camel> newList = new List<Camel>();
-        InfoCamel("PreSort: ");
-        for (int j = 0; j < 2; j++)
+        //InfoCamel("PreSort: ");
+        int allCamelsAtFirst = allCamels.Count;
+        for (int j = 0; j < allCamelsAtFirst; j++)
         {
             Camel higherCamel = new Camel();
             higherCamel.newPos = 0;
@@ -363,7 +364,7 @@ public class StatManager : MonoBehaviour {
         }
 
         allCamels = newList;
-        InfoCamel("Sort: ");
+        //InfoCamel("Sort: ");
     }
 
     void SwitchCamelInAllCamel(int posA, int posB)
@@ -406,7 +407,8 @@ public class StatManager : MonoBehaviour {
     }
 
     void EnterResult()
-    {        
+    {
+        InfoCamel("WINNER: ");
         for (int i=0; i < allCamels.Count; i++)
         {
             for(int j = 0; j < allResult.Count; j++)
