@@ -6,74 +6,40 @@ using System.Linq;
 using System.Text;
 using System.IO;
 
-public class StatManager : MonoBehaviour {
+public class StatManager : MonoBehaviour
+{
 
-    class Camel
-    {
-        public string name;
-        public int pos;
-        public int newPos;
-        public bool isDiceRoll;
-        public Camel camelOnTopAtStart;
-        public Camel newCamelsOnTop;
-    }
+    public static bool isBugged = false;
+		
+    public AllCamels initialCamels = new AllCamels();
+    public AllCamels gameCamels = new AllCamels();
+	public AllRankCount rankCounts = new AllRankCount();
 
-    class Result
-    {
-        public string name;
-        public int[] pos;
-    }
+    public Dictionary<string, Dictionary<string, string>> logRank = new Dictionary<string, Dictionary<string, string>>();
 
-    List<Camel> allCamels;
-    Camel lastCamelCreated;
-    List<Result> allResult;
 
     // Use this for initialization
     void Start ()
     {
-        /*Camel testa = new Camel(); testa.newPos = 1;
-        Camel testb = new Camel(); testb.newPos = 2;
-        allCamels = new List<Camel>();
-        allCamels.Add(testa);
-        allCamels.Add(testb);
-        SortCamelInOrderPos();
-        return;*/
-
-        InitiateResult();
-
         ReadInfoFile();
-        
-        InfoCamel("Start: ");
 
-        List<Camel> camelsToRoll = new List<Camel>();
-        for(int i = 0; i < allCamels.Count; i++)
-            if (!allCamels[i].isDiceRoll)
-                camelsToRoll.Add(allCamels[i]);
+        gameCamels = new AllCamels (initialCamels);
+        gameCamels.ShortInfoCamel();
+        if (isBugged)
+            gameCamels.InfoCamel("GameCamel First");
 
-        List<List<Camel>> allSequence = FindAllPermutation(camelsToRoll);
-
-        for (int i = 0; i < allSequence.Count; i++)
-            MoveWithAllDicesCombo(allSequence[i]);
-
-        ShowResult();
-    }
-
-    void ShowResultTxt(List<int> d)
-    {
-        string result = "RESULT: ";
-        foreach (Camel newCamel in allCamels)
+        List<AllCamels> allPermutations = gameCamels.AllUnrollCamelsPermutation();
+        foreach (var permu in allPermutations)
         {
-            string camelInfo = newCamel.name + newCamel.newPos + " ";
-            if (newCamel.camelOnTopAtStart != null)
-            {
-                camelInfo += "OnTop: ";
-                camelInfo += newCamel.camelOnTopAtStart.name;
-            }
+            if(isBugged)
+                permu.InfoCamel("Permuration de camels",permu.OrderedCamelsForDice);
 
-            result += " - " + camelInfo;
-        }
+			rankCounts = MoveWithAllDicesCombo (permu, rankCounts);
+		}
+       
+		rankCounts.InfoRankCount ();
 
-        Debug.Log(result);
+        UnityEngine.Debug.Log(LogRankToInfo(initialCamels.InfoCamel(), DicesCombinationsPossible(initialCamels.GetUnrollCamelsCount())));
     }
 
     //Get Initial information
@@ -83,8 +49,7 @@ public class StatManager : MonoBehaviour {
 
         var reader = new StreamReader(File.OpenRead(pathCSV));
 
-        int pos = 0;
-        allCamels = new List<Camel>();
+        int pos = 1;
 
         while (!reader.EndOfStream)
         {
@@ -92,23 +57,29 @@ public class StatManager : MonoBehaviour {
 
             if (!string.IsNullOrEmpty(line))
             {
-                for (int i = line.Length; i > 0; i--)
+                Camel lastCamel = null;
+                for (int i = line.Length -1; i >= 0; i--)
                 {
-                    CreateNewCamel(line[i - 1], pos, false);
-                    
+                    if (line[i] == '+' || line[i] == '-')
+                    {
+                        CreateTrap(line[i], pos);
+                    }
+                    else
+                    {
+                        lastCamel = CreateNewCamelinInitialCamels(line[i], pos, lastCamel);
+                    }           
                 }             
             }
             pos++;
         }
+
+        reader.Close();
     }
 
-    void CreateNewCamel(char name, int pos, bool d)
+    Camel CreateNewCamelinInitialCamels(char name, int pos, Camel lastCamelCreated)
     {
-        Camel newCamel = new Camel();
-
-        newCamel.name = FindCamelName(name);
+        Camel newCamel = initialCamels.GetCamel(name);
         newCamel.pos = pos;
-        newCamel.newPos = pos;
 
         newCamel.isDiceRoll = char.IsLower(name);
 
@@ -116,331 +87,162 @@ public class StatManager : MonoBehaviour {
         {
             if(lastCamelCreated.pos == newCamel.pos)
             {
-                newCamel.camelOnTopAtStart = lastCamelCreated;
+                newCamel.camelsOnTop = lastCamelCreated;
             }
         }
 
-        lastCamelCreated = newCamel;
-        allCamels.Add(newCamel);
+        return newCamel;
     }
 
-    string FindCamelName(char color)
+    Trap CreateTrap(char kind, int pos)
     {
-        switch(color)
-        {
-            case 'B': return "Blue";
-            case 'b': return "Blue";
-            case 'G': return "Green";
-            case 'g': return "Green";
-            case 'W': return "White";
-            case 'w': return "White";
-            case 'O': return "Orange";
-            case 'o': return "Orange";
-            case 'Y': return "Yellow";
-            case 'y': return "Yellow";
-            default: return "Unknow Camel";
-        }
+        Trap newTrap = new Trap(kind, pos);
+        initialCamels.AddTrap(newTrap);
+        return newTrap;
     }
 
-    Camel GetCamel(string name)
+	AllRankCount MoveWithAllDicesCombo(AllCamels allCamels, AllRankCount ranks)
     {
-        for (int i = 0; i < allCamels.Count; i++)
-            if (allCamels[i].name == name)
-                return allCamels[i];
+		List<List<int>> dices = DicesCombinationsPossible(allCamels.GetUnrollCamelsCount());
+        Dictionary<string, string> dicesAndRank = new Dictionary<string, string>();
 
-        Debug.LogWarning("Pas trouver le camel");
+        foreach (List<int> d in dices)
+        { 
+			AllCamels tempCamels = new AllCamels(allCamels);
+			tempCamels.MoveCamels(d);
+			ranks.UpdateRankCount (tempCamels.SortCamelInOrderPos());
 
-        return null;
-    }
+            if(dicesAndRank.ContainsKey(DicesToString(d)))
+                UnityEngine.Debug.Log("dfdsa");
 
-    //MoveCamel
-    void MoveCamel(Camel camel, int dice, bool isFirstCamel = true)
-    {
-        //Debug.Log("Dice: " + camel.name + " avance de " + dice);
-        camel.newPos = camel.newPos + dice;
-        
-        if (camel.newCamelsOnTop != null)
-        {
-            //Debug.Log("2E CAMEL");
-            MoveCamel(camel.newCamelsOnTop, dice, false);
+            dicesAndRank.Add(DicesToString(d), tempCamels.ShortInfoCamel());
         }
 
-        if (isFirstCamel)
-            RemoveCamelOnTop(camel);
-        
-        IsCamelLandOnAnotherCamel(camel);        
+        logRank.Add(allCamels.OrderForDiceInfoCamel(), dicesAndRank);
+
+        return ranks;
     }
 
-    void MoveCamels(List<Camel> camels, List<int> dices)
+	List<List<int>> DicesCombinationsPossible(int input)
+	{
+		List<List<int>> dice = new List<List<int>>();
+		int numberOfDice = input;
+		const int diceFace = 3;
+		int indexNumber = (int)Math.Pow(diceFace, numberOfDice);
+		int range = (int)Math.Pow(diceFace, numberOfDice) / diceFace;
+
+		for (int i = 0; i < (int)Math.Pow (diceFace, numberOfDice); i++)
+			dice.Add (new List<int> ());
+
+		int diceNumber = 1;
+		int counter = 0;
+
+		for (int i = 1; i <= indexNumber; i++)
+		{
+			if (range != 0)
+			{
+				dice[i - 1].Add(diceNumber);
+				counter++;
+				if (counter == range)
+				{
+					counter = 0;
+					diceNumber++;
+				}
+				if (i == indexNumber)
+				{
+					range /= diceFace;
+					i = 0;
+				}
+				if (diceNumber == diceFace + 1)
+				{
+					diceNumber = 1;
+				}
+			}
+		}
+		return dice;
+	}
+
+    // rankLog
+    string DicesToString(List<int> dices)
     {
-        for (int i = 0; i < camels.Count; i++)
+        string result = string.Empty;
+
+        foreach (var dice in dices)
         {
-            MoveCamel(camels[i], dices[i]);
+            result += dice + "-";
         }
+
+        return result.Remove(result.Length - 1,1);
     }
 
-    void MoveWithAllDicesCombo(List<Camel> camels)
+    string LogRankToInfo(string initialInfo)
     {
-        List<List<int>> dices = DicesCombinationsPossible(camels.Count);
+        UnityEngine.Debug.LogError("Pas sur que ca marche!!!");
+        string result = initialInfo + "\n";
+        Dictionary<string, string> resultByDice = new Dictionary<string, string>();
+        string title = ",";
 
-        foreach(List<int> d in dices)
+        foreach (KeyValuePair<string, Dictionary<string, string>> entry in logRank)
         {
-            string order = "Order: ";
-            foreach (Camel c in camels)
-                order += c.name + ",";
+            title += entry.Key + ",";
 
-            foreach (int a in d)
-                order += a.ToString();
-
-            Debug.Log(order);
-            ResetCamels();
-            
-            MoveCamels(camels, d);
-            SortCamelInOrderPos();
-            EnterResult();
-            //ShowResultTxt(d);
-        }
-    }
-
-    void ResetCamels()
-    {
-        //Debug.Log("Reset");
-        for(int i = 0; i < allCamels.Count; i++)
-        {
-            allCamels[i].newCamelsOnTop = allCamels[i].camelOnTopAtStart;
-            allCamels[i].newPos = allCamels[i].pos;
-        }
-    }
-
-    void IsCamelLandOnAnotherCamel(Camel movingCamel)
-    {
-        //Debug.Log(movingCamel.name + movingCamel.newPos);
-        for (int i = 0; i < allCamels.Count; i++)
-        {
-            if(allCamels[i] != movingCamel && allCamels[i].newPos == movingCamel.newPos && allCamels[i].newCamelsOnTop == null && movingCamel.newCamelsOnTop != allCamels[i])
+            foreach (KeyValuePair<string, string> entryDice in entry.Value)
             {
-                //Debug.Log("OnTop: " + movingCamel.name + " over " + allCamels[i].name);
-                allCamels[i].newCamelsOnTop = movingCamel;
-            }
-        }
-    }
-
-    void RemoveCamelOnTop(Camel camel)
-    {
-        for (int i = 0; i < allCamels.Count; i++)
-        {
-            if (allCamels[i].newCamelsOnTop == camel)
-            {
-                //LE PROBLEME EST ICI
-                allCamels[i].newCamelsOnTop = null;
-            }
-        }
-        
-    }
-
-
-    //Permutation & Combination
-    List<List<Camel>> FindAllPermutation(List<Camel> camels)
-    {
-        List<List<Camel>> result = new List<List<Camel>>();
-        foreach (var permu in Permutate(camels, camels.Count))
-        {
-            List<Camel> sequence = new List<Camel>();
-            foreach (var i in permu)
-                sequence.Add(i as Camel);
-
-            result.Add(sequence);
-        }
-
-        foreach(List<Camel> c in result)
-        {
-            string seq = string.Empty;
-            foreach (Camel camel in c)
-                seq += camel.name + " ";
-        }
-
-        return result;
-    }
-
-    void RotateRight(IList sequence, int count)
-    {
-        object tmp = sequence[count - 1];
-        sequence.RemoveAt(count - 1);
-        sequence.Insert(0, tmp);
-    }
-
-    IEnumerable<IList> Permutate(IList sequence, int count)
-    {
-        if (count == 1) yield return sequence;
-        else
-        {
-            for (int i = 0; i < count; i++)
-            {
-                foreach (var perm in Permutate(sequence, count - 1))
-                    yield return perm;
-                RotateRight(sequence, count);
-            }
-        }
-    }
-
-    List<List<int>> DicesCombinationsPossible(int numberOfDice)
-    {
-        List<List<int>> result = new List<List<int>>();
-
-        result.Add(new List<int> { 1, 1 });
-        result.Add(new List<int> { 1, 2 });
-        result.Add(new List<int> { 1, 3 });
-
-        result.Add(new List<int> { 2, 1 });
-        result.Add(new List<int> { 2, 2 });
-        result.Add(new List<int> { 2, 3 });
-
-        result.Add(new List<int> { 3, 1 });
-        result.Add(new List<int> { 3, 2 });
-        result.Add(new List<int> { 3, 3 });
-
-        return result;
-    }
-
-    //Log Camel Info
-    void InfoCamel(string text)
-    {
-        string camelInfo = allCamels.Count + text;
-        for(int i = 0; i < allCamels.Count; i++)
-        {       
-            camelInfo += " - " + allCamels[i].name + " " + allCamels[i].newPos + " ";
-            if (allCamels[i].camelOnTopAtStart != null)
-                camelInfo += "sous *" + allCamels[i].camelOnTopAtStart.name + "*";
-
-            if (allCamels[i].newCamelsOnTop != null)
-                camelInfo += "sous " + allCamels[i].newCamelsOnTop.name;
-        }
-
-        Debug.Log(camelInfo);
-    }
-
-    void SortCamelInOrderPos()
-    {
-        List<Camel> newList = new List<Camel>();
-        //InfoCamel("PreSort: ");
-        int allCamelsAtFirst = allCamels.Count;
-        for (int j = 0; j < allCamelsAtFirst; j++)
-        {
-            Camel higherCamel = new Camel();
-            higherCamel.newPos = 0;
-            for (int i = 0; i < allCamels.Count; i++)
-            {
-                if(newList.Count == 0)
+                if (!resultByDice.ContainsKey(entryDice.Key))
                 {
-                    if(allCamels[i].newCamelsOnTop == null && allCamels[i].newPos > higherCamel.newPos)
-                    {
-                        //Debug.Log("1");
-                        higherCamel = allCamels[i];
-                    }
-                }
-                else if(allCamels[i].newCamelsOnTop == newList[newList.Count - 1])
-                {
-                    //Debug.Log("2");
-                    higherCamel = allCamels[i];
-                    break;
+                    resultByDice.Add(entryDice.Key, entryDice.Key);
                 }
                 else
                 {
-                    if (allCamels[i].newCamelsOnTop == null && allCamels[i].newPos > higherCamel.newPos)
-                    {
-                        //Debug.Log("3");
-                        higherCamel = allCamels[i];
-                    }
-                }
-            }
-            for(int k = 0;  k < allCamels.Count; k++)
-            {
-                //Debug.Log(allCamels[k].name + higherCamel.name);
-                if (allCamels[k].name == higherCamel.name)
-                    allCamels.Remove(allCamels[k]);
-            }
-            //allCamels.Remove(higherCamel);           
-            newList.Add(higherCamel);
-        }
-
-        allCamels = newList;
-        //InfoCamel("Sort: ");
-    }
-
-    void SwitchCamelInAllCamel(int posA, int posB)
-    {
-        Debug.Log(allCamels[posA].name + " " + allCamels[posB].name);
-        Camel temp = allCamels[posA];
-        allCamels[posA] = allCamels[posB];
-        allCamels[posB] = temp;
-    }
-
-    //Result
-    void InitiateResult()
-    {
-        Result white = new Result();
-        white.name = "White";
-        white.pos = new int[5];
-
-        Result blue = new Result();
-        blue.name = "Blue";
-        blue.pos = new int[5];
-
-        Result red = new Result();
-        red.name = "Red";
-        red.pos = new int[5];
-
-        Result orange = new Result();
-        orange.name = "Orange";
-        orange.pos = new int[5];
-
-        Result yellow = new Result();
-        yellow.name = "Yellow";
-        yellow.pos = new int[5];
-
-        allResult = new List<Result>();
-        allResult.Add(white);
-        allResult.Add(blue);
-        allResult.Add(red);
-        allResult.Add(orange);
-        allResult.Add(yellow);
-    }
-
-    void EnterResult()
-    {
-        InfoCamel("WINNER: ");
-        for (int i=0; i < allCamels.Count; i++)
-        {
-            for(int j = 0; j < allResult.Count; j++)
-            {
-                //Debug.Log(allResult[j].name + " " + result[i].name);
-                if (allResult[j].name == allCamels[i].name)
-                {
-                    allResult[j].pos[i]++;                 
+                    resultByDice[entryDice.Key] += "," + entryDice.Value;
                 }
             }
         }
-    }
 
-    void ShowResult()
-    {
-        foreach (Result camel in allResult)
+        result += title + "\n";
+
+        foreach (KeyValuePair<string, string> entry in resultByDice)
         {
-            int total = 0;
-            for (int i = 0; i < camel.pos.Length; i++)
-            {
-                total += camel.pos[i];
-            }
-
-            string result = camel.name + " ";
-            for (int i = 0; i < camel.pos.Length; i++)
-            {
-                result += i+1 + ": " + camel.pos[i] + "/" + total + " ";
-                //result += camel.pos[i] / total + "%";
-                result += "\n";
-            }
-
-            Debug.Log(result);
+            result += entry.Value + "\n";
         }
+       
+        return result;
     }
+
+    string LogRankToInfo(string initialInfo, List<List<int>> dices)
+    {
+        string result = initialInfo + "\n";
+        Dictionary<string, string> resultByDice = new Dictionary<string, string>();
+        string title = ",";
+
+        List<string> dicesInString = new List<string>();
+
+        foreach(var d in dices)
+        {
+            dicesInString.Add(DicesToString(d));
+        }
+
+        foreach (KeyValuePair<string, Dictionary<string, string>> entry in logRank)
+        {
+            title += entry.Key + ",";
+        }
+
+        result += title + "\n";
+
+        foreach(var diceCombi in dicesInString)
+        {
+            string dicesResult = diceCombi + ",";
+
+            foreach (KeyValuePair<string, Dictionary<string, string>> entry in logRank)
+            {
+                dicesResult += entry.Value[diceCombi] + ",";
+            }
+
+            result += dicesResult + "\n";
+        }
+
+        return result;
+    }
+
 }
+
