@@ -8,21 +8,17 @@ using System.IO;
 
 public class StatManager : MonoBehaviour
 {
-
     public static bool isBugged = false;
 		
     public AllCamels initialCamels = new AllCamels();
     public AllCamels gameCamels = new AllCamels();
 	public AllRankCount rankCounts = new AllRankCount();
 
-    public Dictionary<string, Dictionary<string, string>> logRank = new Dictionary<string, Dictionary<string, string>>();
+    public Dictionary<string, Dictionary<string, string>> logRank = new Dictionary<string, Dictionary<string, string>>();    
 
-
-    // Use this for initialization
-    void Start ()
-    {
-        ReadInfoFile();
-
+    //C'est la que la magie arrive ei: calculer les odds
+    public void CestLaQueLaPoutineSePasse ()
+    {     
         gameCamels = new AllCamels (initialCamels);
         gameCamels.ShortInfoCamel();
         if (isBugged)
@@ -33,13 +29,13 @@ public class StatManager : MonoBehaviour
         {
             if(isBugged)
                 permu.InfoCamel("Permuration de camels",permu.OrderedCamelsForDice);
-
+            
 			rankCounts = MoveWithAllDicesCombo (permu, rankCounts);
 		}
        
-		rankCounts.InfoRankCount ();
+		//rankCounts.InfoRankCount ();
 
-        UnityEngine.Debug.Log(LogRankToInfo(initialCamels.InfoCamel(), DicesCombinationsPossible(initialCamels.GetUnrollCamelsCount())));
+        //WriteInfoInFile("Result",LogRankToInfo(initialCamels.InfoCamel(), DicesCombinationsPossible(initialCamels.GetUnrollCamelsCount())));
     }
 
     //Get Initial information
@@ -50,6 +46,7 @@ public class StatManager : MonoBehaviour
         var reader = new StreamReader(File.OpenRead(pathCSV));
 
         int pos = 1;
+        string test = string.Empty;
 
         while (!reader.EndOfStream)
         {
@@ -76,6 +73,42 @@ public class StatManager : MonoBehaviour
         reader.Close();
     }
 
+    void WriteInfoInFile(string fileName, string info)
+    {
+        string path = Directory.GetCurrentDirectory() + "/" + fileName + ".xls";
+        File.WriteAllText(path, info);
+    }
+
+    public void PopulateInitialCamel(string board)
+    {
+        SetInitialCamel(board);
+    }
+
+    void SetInitialCamel(string board)
+    {
+        string[] subBoard = board.Split(';');
+
+        for(int pos = 0; pos < subBoard.Length; pos++)
+        {
+            Camel lastCamel = null;
+            string line = subBoard[pos];
+
+            for (int j = line.Length - 1; j >= 0; j--)
+            {
+                if (line[j] == '+' || line[j] == '-')
+                {
+                    CreateTrap(line[j], pos);
+                }
+                else
+                {
+                    lastCamel = CreateNewCamelinInitialCamels(line[j], pos, lastCamel);
+                }
+            }
+        }
+
+        Debug.Log(initialCamels.ShortInfoCamel());
+    }
+  
     Camel CreateNewCamelinInitialCamels(char name, int pos, Camel lastCamelCreated)
     {
         Camel newCamel = initialCamels.GetCamel(name);
@@ -109,11 +142,8 @@ public class StatManager : MonoBehaviour
         foreach (List<int> d in dices)
         { 
 			AllCamels tempCamels = new AllCamels(allCamels);
-			tempCamels.MoveCamels(d);
+            tempCamels.MoveCamels(d, ranks);           
 			ranks.UpdateRankCount (tempCamels.SortCamelInOrderPos());
-
-            if(dicesAndRank.ContainsKey(DicesToString(d)))
-                UnityEngine.Debug.Log("dfdsa");
 
             dicesAndRank.Add(DicesToString(d), tempCamels.ShortInfoCamel());
         }
@@ -224,25 +254,52 @@ public class StatManager : MonoBehaviour
 
         foreach (KeyValuePair<string, Dictionary<string, string>> entry in logRank)
         {
-            title += entry.Key + ",";
+            title += entry.Key + ",";          
         }
 
         result += title + "\n";
-
-        foreach(var diceCombi in dicesInString)
+        
+        foreach (var diceCombi in dicesInString)
         {
             string dicesResult = diceCombi + ",";
-
+            
             foreach (KeyValuePair<string, Dictionary<string, string>> entry in logRank)
-            {
-                dicesResult += entry.Value[diceCombi] + ",";
+            {               
+                dicesResult += entry.Value[diceCombi] + ",";                
             }
 
-            result += dicesResult + "\n";
+            result += dicesResult + "\n";        
         }
 
         return result;
     }
 
+    //Public Fonction
+    public void CreateBoard(string board)
+    {
+        PopulateInitialCamel(board);
+    }
+
+    public void FindEquityCashCard(List<CashCard> cashCards)
+    {
+        for (int i = 0; i < cashCards.Count; i++)
+        {
+            float equity = 0;
+
+            equity += cashCards[i].winForFirst * rankCounts.GetRankCount(cashCards[i].camel).GetPercent(RankPosition.First);
+            equity += cashCards[i].winForSecond * rankCounts.GetRankCount(cashCards[i].camel).GetPercent(RankPosition.Second);
+            equity += cashCards[i].lostForOthers * rankCounts.GetRankCount(cashCards[i].camel).GetPercent(RankPosition.Third);
+            equity += cashCards[i].lostForOthers * rankCounts.GetRankCount(cashCards[i].camel).GetPercent(RankPosition.Fourth);
+            equity += cashCards[i].lostForOthers * rankCounts.GetRankCount(cashCards[i].camel).GetPercent(RankPosition.Fifth);
+
+            cashCards[i] = new CashCard(cashCards[i].camel, cashCards[i].winForFirst, equity);
+        }
+    }   
+
+    //BoardInfo
+    public string GetTokensOnCase(int caseNb)
+    {
+        return initialCamels.GetTokensOnCase(caseNb);
+    }
 }
 

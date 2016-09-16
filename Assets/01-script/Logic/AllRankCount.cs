@@ -78,9 +78,20 @@ public class RankCount
 	}
 }
 
+public struct Case
+{
+    public int pos;
+    public int nbVisite;
+    public float equity;
+
+    public string Info()
+    {
+        return string.Format("Pos: {0}: Visite: {1}, Equity: {2}", pos, nbVisite, equity);
+    }
+}
+
 public class AllRankCount 
 {
-
 	private List<RankCount> rankCounts;
 
 	private RankCount yellow;
@@ -88,6 +99,8 @@ public class AllRankCount
 	private RankCount orange;
 	private RankCount green;
 	private RankCount white;
+
+    private Dictionary<int, int> casesVisited = new Dictionary<int, int>();
 
     public static int GetRankCount()
 	{
@@ -115,7 +128,7 @@ public class AllRankCount
 		for(int i = 0; i < camels.Count; i++)
 		{
 			GetRankCount (camels [i].name).SetPosition ((RankPosition)i);
-		}
+        }
 
 		//InfoRankCount ();
 	}
@@ -133,7 +146,8 @@ public class AllRankCount
 
             for (int j = 0; j < GetRankCount(); j++)
 			{
-				infoRank += ((RankPosition)j).ToString() + " " + sortedRankCount[i].GetPositionNumber((RankPosition)j).ToString().PadLeft(paddingLeft, '0') + "/" + totalRank + "  \t";
+                float percent = (float) sortedRankCount[i].GetPositionNumber((RankPosition)j) / (float)totalRank;
+                infoRank += ((RankPosition)j).ToString() + " " + sortedRankCount[i].GetPositionNumber((RankPosition)j).ToString().PadLeft(paddingLeft, '0') + "/" + totalRank + " " + percent.ToString("0.00") + "  \t";
 			}
 
             infoRank += "\n";
@@ -142,7 +156,7 @@ public class AllRankCount
 		Debug.Log (infoRank);
 	}
 
-	private RankCount GetRankCount(string name)
+	public RankCount GetRankCount(string name)
 	{
 		for(int i = 0; i < rankCounts.Count; i++)
 		{
@@ -209,5 +223,38 @@ public class AllRankCount
         return newList;
     }
 
+    public void UpdateCasesVisited(int newPos, Camel camel)
+    {
+        if(casesVisited.ContainsKey(newPos))
+        {
+            casesVisited[newPos]++;
+        }
+        else
+        {
+            casesVisited.Add(newPos, 1);
+        }
+    }
+
+    public Case HighestCase(AllCamels camels)
+    {
+        Case result = new Case();
+        int totalVisite = 0;
+
+
+        foreach (var caseVisited in casesVisited)
+        {
+            totalVisite += caseVisited.Value;
+
+            if (camels.CanPutTrap(caseVisited.Key) && caseVisited.Value >= result.nbVisite)
+            {
+                result.pos = caseVisited.Key;
+                result.nbVisite = caseVisited.Value;
+            }
+        }
+
+        result.equity = (float)result.nbVisite / totalVisite;
+
+        return result;
+    }
 
 }

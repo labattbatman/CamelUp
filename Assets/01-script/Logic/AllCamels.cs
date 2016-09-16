@@ -6,8 +6,6 @@ using System.Linq;
 using System.Text;
 using System.IO;
 
-//Todo TESTER +/-
-//Todo Checker si il passe la ligne d'arrivé
 
 public class Camel
 {
@@ -48,8 +46,7 @@ public class AllCamels
 	public Camel orange;
 	public Camel yellow;
 	public Camel green;
-
-    private List<Trap> allTraps;
+   
 	private List<Camel> camels;
 
     private List<Camel> orderedCamelsForDice;
@@ -57,6 +54,12 @@ public class AllCamels
     public List<Camel> OrderedCamelsForDice
     {
         get { return orderedCamelsForDice; }
+    }
+
+    private List<Trap> allTraps;
+    public List<Trap> AllTraps
+    {
+        get { return allTraps; }
     }
 
     public AllCamels()
@@ -74,7 +77,9 @@ public class AllCamels
 		camels.Add(orange);
 		camels.Add(yellow);
 		camels.Add(green);
-	}
+
+        allTraps = new List<Trap>();
+    }
 
 	public AllCamels(AllCamels myCamels)
 	{
@@ -91,6 +96,8 @@ public class AllCamels
 		camels.Add(orange);
 		camels.Add(yellow);
 		camels.Add(green);
+
+        allTraps = new List<Trap>(myCamels.allTraps);
 
         orderedCamelsForDice = new List<Camel>();
 
@@ -113,7 +120,7 @@ public class AllCamels
 		}
 	}
 
-    public AllCamels(List<Camel> myCamels)
+    public AllCamels(List<Camel> myCamels, List<Trap> myTraps)
     {
         blue = new Camel("Blue");
         white = new Camel("White");
@@ -127,7 +134,9 @@ public class AllCamels
         camels.Add(white);
         camels.Add(orange);
         camels.Add(yellow);
-        camels.Add(green); 
+        camels.Add(green);
+
+        allTraps = new List<Trap>(myTraps);
 
         foreach (Camel myCamel in myCamels)
         {
@@ -280,25 +289,29 @@ public class AllCamels
 		//Debug.Log(string.Format("Je move {0} de {1} et 1erCamel {2}",name,dice,isFirstCamel));
 		Camel camel = GetCamel(name);
 
-		camel.pos += dice;		
+		camel.pos += dice;
 
-		if (isFirstCamel)
-			RemoveCamelOnTop(camel.name);
+        if (isFirstCamel)
+        {
+            RemoveCamelOnTop(camel.name);
+        }
 		
 		IsCamelLandOnAnotherCamel(camel.name);
-
-        IsLandingOnTrap(camel);
 
         if (camel.camelsOnTop != null)
 		{
 			MoveCamel(camel.camelsOnTop.name, dice, false);
 		}
 
-		//InfoCamel ("Post MoveCamel");
-	}
+        IsLandingOnTrap(camel);
 
-	public void MoveCamels(List<int> dices)
+        //InfoCamel ("Post MoveCamel");
+    }
+
+	public void MoveCamels(List<int> dices, AllRankCount ranks)
 	{
+        string info = string.Empty;
+
 		if(dices.Count != GetUnrollCamelsCount())
 		{
 			Debug.LogError (string.Format ("Il y a {0} camels Unroll et {1} dés", GetUnrollCamelsCount (), dices.Count));
@@ -306,32 +319,37 @@ public class AllCamels
 		}
 
 	    int diceIndex = 0;
-			
-		for (int i = 0; i < orderedCamelsForDice.Count; i++)
+
+        for (int i = 0; i < orderedCamelsForDice.Count; i++)
 		{
 		    if (!orderedCamelsForDice[i].isDiceRoll)
 		    {
-		        MoveCamel(orderedCamelsForDice[i].name, dices[diceIndex]);
+                              
+                MoveCamel(orderedCamelsForDice[i].name, dices[diceIndex]);
 		        diceIndex++;
+
+                ranks.UpdateCasesVisited(orderedCamelsForDice[i].pos, orderedCamelsForDice[i]);
 		    }
 		}
 	}
 
-    private void IsLandingOnTrap(Camel camel)
+    private bool IsLandingOnTrap(Camel camel)
     {
         foreach(var trap in allTraps)
         {
             if(trap.pos == camel.pos)
             {
                 DoTrap(trap, camel);
-                return;
+                return true;
             }
         }
+
+        return false;
     }
 
     private void DoTrap(Trap trap, Camel camel)
     {
-        Debug.Log(string.Format("Camel {0} land on trap {1}", camel.name, trap.isPlusTrap ? "+" : "-"));
+        //Debug.Log(string.Format("Camel {0} land on trap {1}", camel.name, trap.isPlusTrap ? "+" : "-"));
 
         if(trap.isPlusTrap)
         {
@@ -344,10 +362,9 @@ public class AllCamels
     }
 
 	public List<Camel> SortCamelInOrderPos()
-	{
-        //UNITE TEST       
+	{  
 		List<Camel> newList = new List<Camel>();
-		List<Camel> remainingCamels = new List<Camel>(GetCamels());
+		List<Camel> remainingCamels = new List<Camel>(GetCamels());       
 
         for (int j = 0; j < GetCamels().Count; j++)
         {
@@ -373,7 +390,7 @@ public class AllCamels
 					{
 						higherCamel = currentCamel;
 					}
-				}
+                }
 			}
 
 			for(int k = 0;  k < remainingCamels.Count; k++)
@@ -389,6 +406,11 @@ public class AllCamels
 
 			newList.Add(higherCamel);
 		}
+
+        if(remainingCamels.Count != 0)
+        {
+            UnityEngine.Debug.LogError("We miss a Camel");
+        }
 
         return newList;
 	}
@@ -409,7 +431,7 @@ public class AllCamels
                 Debug.LogError(string.Format("Pas le bon nombre de camel: {0}", allCamelsForDice.Count));
             }
 
-            AllCamels combo = new AllCamels(allCamelsForDice);
+            AllCamels combo = new AllCamels(allCamelsForDice, allTraps);
             combo.orderedCamelsForDice = allCamelsForDice;
 
             result.Add(combo);
@@ -437,6 +459,12 @@ public class AllCamels
 
 			camelInfo += "\n";
 		}
+
+        foreach (var trap in allTraps)
+        {
+            camelInfo += string.Format("- Trap: {0} {1} ", (trap.isPlusTrap ? "+" : "-"), trap.pos);
+            camelInfo += "\n";
+        }
 
 		Debug.Log(camelInfo);
 
@@ -526,4 +554,50 @@ public class AllCamels
 		}
 	}
 	#endregion //Permutation & Combination
+
+    //GetInfo
+    public string GetTokensOnCase(int caseNb)
+    {
+        string result = string.Empty;
+
+        foreach(var trap in allTraps )
+        {
+            if(trap.pos == caseNb)
+            {
+                result += trap.isPlusTrap ? "+" : "-";
+            }
+        }
+
+        foreach(var camel in SortCamelInOrderPos())
+        {
+            result += camel.name[0];
+        }
+
+        return result;
+    }
+
+
+    public bool CanPutTrap(int pos)
+    {
+        foreach(var camel in camels)
+        {
+            if (camel.pos == pos)
+            {
+                //Debug.Log("Refuse by Camel; " + pos);
+                return false;
+            }
+        }
+
+        foreach(var trap in allTraps)
+        {
+            if (Math.Abs(trap.pos - pos) == 1)
+            {
+                //Debug.Log("Refuse by Trap; " + pos);
+                return false;
+            }
+        }
+
+        return true;
+    }
+
 }
