@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 using System;
 using System.Collections.Generic;
@@ -24,10 +24,10 @@ public class CustomDropDownMenu : MonoBehaviour
         get { return container; }
     }
 
-    public void Setup()
+    public void Setup(Type optionEnum)
     {
         ShowContainer(false);
-        CreateOptionButtons();
+        CreateOptionButtons(optionEnum);
     }
     
     public void OnMainButtonClicked()
@@ -36,7 +36,10 @@ public class CustomDropDownMenu : MonoBehaviour
         UIManager.Instance.Board.CloseAllOptions(cb);
         ShowContainer(!container.active);
 
-        OnMainButtonClick.Invoke(cb);
+        if (OnMainButtonClick != null)
+        {
+            OnMainButtonClick.Invoke(cb);
+        }
     }
 
     public void ChangeMainButtontext(string newText)
@@ -44,9 +47,11 @@ public class CustomDropDownMenu : MonoBehaviour
         mainButton.transform.GetChild(0).gameObject.GetComponent<Text>().text = newText;
     }
 
-    private void CreateOptionButtons()
+    private void CreateOptionButtons(Type optionEnum)
     {
-        foreach (OptionButtonType option in Enum.GetValues(typeof(OptionButtonType)))
+        var options = Enum.GetNames(optionEnum);
+
+        foreach (var option in options)
         {
             GameObject button = Instantiate(optionButtonPrefab);
             button.transform.SetParent(container.transform);
@@ -63,9 +68,7 @@ public class CustomDropDownMenu : MonoBehaviour
     {
         foreach (var ob in optionButtons)
         {
-            var test = newText.ToUpper().IndexOf(ob.optionType.ToString()[0]);
-            
-            ob.SetText(test);
+            ob.SetText();
         }
 
         ChangeMainButtontext(newText);
@@ -78,6 +81,9 @@ public class CustomDropDownMenu : MonoBehaviour
 
     private void OnOptionClick(OptionButton ob)
     {
-        OnDropDownClick(ob);
+        if (OnDropDownClick != null)
+        {
+            OnDropDownClick(ob);
+        }
     }
 }

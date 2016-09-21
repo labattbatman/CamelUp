@@ -1,8 +1,19 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+
+enum OptionButtonType
+{
+    Yellow = 0,
+    Green,
+    White,
+    Blue,
+    Orange,
+    Plus,
+    Minus
+}
 
 public class CaseBoard : MonoBehaviour
 {
@@ -50,7 +61,7 @@ public class CaseBoard : MonoBehaviour
     {
         dropdown.OnDropDownClick += OnDropdownChange;
         dropdown.OnMainButtonClick += onMainClick;
-        dropdown.Setup();
+        dropdown.Setup(typeof(OptionButtonType));
 
         caseNb = rank;
         SetTokenOnCase(tokens);
@@ -76,7 +87,7 @@ public class CaseBoard : MonoBehaviour
     #region Drowdown
     private void OnDropdownChange(OptionButton ob)
     {
-        char token = (char)ob.optionType;
+        char token = ob.optionType[0];
         bool isTokenOnCase = IsTokenOnCase(token);
 
         if (isTokenOnCase)

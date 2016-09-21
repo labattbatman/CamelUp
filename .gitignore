@@ -51,3 +51,5 @@ ProjectSettings
 CamelUp.CSharp
 CamelUp.CSharp.csproj
 /Temp/
+*.suo
+.vs/CamelUp/v14/.suo
