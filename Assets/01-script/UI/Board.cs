@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 
@@ -19,6 +19,9 @@ public class Board : MonoBehaviour
     [SerializeField]
     private List<Toggle> camelToggles;
 
+    [SerializeField]
+    private AutoMoveUI autoMoveUI;
+
     private List<CaseBoard> cases = new List<CaseBoard>();
 
     private const int NUMBER_OF_CASES = 16;
@@ -33,6 +36,8 @@ public class Board : MonoBehaviour
     {
         camelInitPos = GetCamel('W').transform.position;
         CreateCases();
+        autoMoveUI.Setup();
+        autoMoveUI.onButtonClick += OnAutoMoveUIClick;
     }
 
     public GameObject GetCamel(char aCamelName)
@@ -190,4 +195,9 @@ public class Board : MonoBehaviour
             container.gameObject.SetActive(true);
     }
 
+    private void OnAutoMoveUIClick(char camel, int diceNumber)
+    {
+        //todo faire ca + visuel dans la scene
+        UnityEngine.Debug.Log(camel + " " + diceNumber);
+    }
 }
