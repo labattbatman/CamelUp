@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -41,12 +41,19 @@ public class StatManager : MonoBehaviour
     //Get Initial information
     void ReadInfoFile()
     {
-        string pathCSV = Directory.GetCurrentDirectory() + "/Camel-Up.txt";
+        //todo besoin reformater le file en string -> soit au lien retour chariot on utilise ;
+        // Apres on utilise AllCamel(newString);
+        //exemple
+        // wobg
+        //Y
+        // =
+        // wobg;Y
+
+        /*string pathCSV = Directory.GetCurrentDirectory() + "/Camel-Up.txt";
 
         var reader = new StreamReader(File.OpenRead(pathCSV));
 
         int pos = 1;
-        string test = string.Empty;
 
         while (!reader.EndOfStream)
         {
@@ -70,7 +77,7 @@ public class StatManager : MonoBehaviour
             pos++;
         }
 
-        reader.Close();
+        reader.Close();*/
     }
 
     void WriteInfoInFile(string fileName, string info)
@@ -81,58 +88,8 @@ public class StatManager : MonoBehaviour
 
     public void PopulateInitialCamel(string board)
     {
-        SetInitialCamel(board);
-    }
-
-    void SetInitialCamel(string board)
-    {
-        string[] subBoard = board.Split(';');
-
-        for(int pos = 0; pos < subBoard.Length; pos++)
-        {
-            Camel lastCamel = null;
-            string line = subBoard[pos];
-
-            for (int j = line.Length - 1; j >= 0; j--)
-            {
-                if (line[j] == '+' || line[j] == '-')
-                {
-                    CreateTrap(line[j], pos);
-                }
-                else
-                {
-                    lastCamel = CreateNewCamelinInitialCamels(line[j], pos, lastCamel);
-                }
-            }
-        }
-
-        Debug.Log(initialCamels.ShortInfoCamel());
-    }
-  
-    Camel CreateNewCamelinInitialCamels(char name, int pos, Camel lastCamelCreated)
-    {
-        Camel newCamel = initialCamels.GetCamel(name);
-        newCamel.pos = pos;
-
-        newCamel.isDiceRoll = char.IsLower(name);
-
-        if(lastCamelCreated != null)
-        {
-            if(lastCamelCreated.pos == newCamel.pos)
-            {
-                newCamel.camelsOnTop = lastCamelCreated;
-            }
-        }
-
-        return newCamel;
-    }
-
-    Trap CreateTrap(char kind, int pos)
-    {
-        Trap newTrap = new Trap(kind, pos);
-        initialCamels.AddTrap(newTrap);
-        return newTrap;
-    }
+        initialCamels = new AllCamels(board);
+    } 
 
 	AllRankCount MoveWithAllDicesCombo(AllCamels allCamels, AllRankCount ranks)
     {

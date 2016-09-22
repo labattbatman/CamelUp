@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -12,7 +12,7 @@ public class Camel
 	public string name;
 	public int pos;
 	public bool isDiceRoll = true;
-	public Camel camelsOnTop;
+	public Camel camelOnTop;
 
 	public Camel(string camelName)
 	{
@@ -25,6 +25,13 @@ public class Camel
 		pos = oldCamel.pos;
 		isDiceRoll = oldCamel.isDiceRoll;
 	}
+
+    public Camel(string camelName, int pos, bool isDiceRoll, Camel camelOnTop) : this(camelName)
+    {
+        this.pos = pos;
+        this.isDiceRoll = isDiceRoll;
+        this.camelOnTop = camelOnTop;
+    }
 }
 
 public class Trap
@@ -62,6 +69,7 @@ public class AllCamels
         get { return allTraps; }
     }
 
+    #region Constructor
     public AllCamels()
 	{
 		blue = new Camel("Blue");
@@ -81,15 +89,15 @@ public class AllCamels
         allTraps = new List<Trap>();
     }
 
-	public AllCamels(AllCamels myCamels)
+	public AllCamels(AllCamels originalCamels)
 	{
-		blue = new Camel(myCamels.blue);
-		white = new Camel(myCamels.white);
-		orange = new Camel(myCamels.orange);
-		yellow = new Camel(myCamels.yellow);
-		green = new Camel(myCamels.green);
+		blue = new Camel(originalCamels.blue);
+		white = new Camel(originalCamels.white);
+		orange = new Camel(originalCamels.orange);
+		yellow = new Camel(originalCamels.yellow);
+		green = new Camel(originalCamels.green);
 
-		camels = new List<Camel> ();
+		camels = new List<Camel>();
 
 		camels.Add(blue);
 		camels.Add(white);
@@ -97,30 +105,31 @@ public class AllCamels
 		camels.Add(yellow);
 		camels.Add(green);
 
-        allTraps = new List<Trap>(myCamels.allTraps);
+        allTraps = new List<Trap>(originalCamels.allTraps);
 
         orderedCamelsForDice = new List<Camel>();
 
-        if(myCamels.orderedCamelsForDice != null)
+        if(originalCamels.orderedCamelsForDice != null)
         {
-            foreach (var myCamel in myCamels.orderedCamelsForDice)
+            foreach (var myCamel in originalCamels.orderedCamelsForDice)
 	        {
                 orderedCamelsForDice.Add(GetCamel(myCamel.name));
             }
         }
 
-		for(int i = 0; i < myCamels.GetCamels().Count; i++)
+		for(int i = 0; i < originalCamels.GetCamels().Count; i++)
 		{
-			Camel camel = myCamels.GetCamel (i);
+			Camel originalCamel = originalCamels.GetCamel (i);
 
-			if(camel.camelsOnTop != null)
+			if(originalCamel.camelOnTop != null)
 			{
-				GetCamel (camel.name).camelsOnTop = GetCamel (camel.camelsOnTop.name);
+                Camel camel = GetCamel(originalCamel.name);
+                camel.camelOnTop = GetCamel(originalCamel.camelOnTop.name);
 			}				
 		}
 	}
 
-    public AllCamels(List<Camel> myCamels, List<Trap> myTraps)
+    public AllCamels(List<Camel> originalCamels, List<Trap> myTraps)
     {
         blue = new Camel("Blue");
         white = new Camel("White");
@@ -138,21 +147,69 @@ public class AllCamels
 
         allTraps = new List<Trap>(myTraps);
 
-        foreach (Camel myCamel in myCamels)
+        foreach (Camel originalCamel in originalCamels)
         {
-            Camel camel = GetCamel(myCamel.name);
-            camel.pos = myCamel.pos;
-            camel.isDiceRoll = myCamel.isDiceRoll;
+            Camel camel = GetCamel(originalCamel.name);
+            camel.pos = originalCamel.pos;
+            camel.isDiceRoll = originalCamel.isDiceRoll;
 
-            if (myCamel.camelsOnTop != null)
+            if (originalCamel.camelOnTop != null)
             {
-                GetCamel(camel.name).camelsOnTop = GetCamel(myCamel.camelsOnTop.name);
+                camel.camelOnTop = GetCamel(originalCamel.camelOnTop.name);
             }
         }
     }
 
-	#region Private Function
-	private List<Camel> GetCamels()
+    public AllCamels(string board)
+    {
+        blue = new Camel("Blue");
+        white = new Camel("White");
+        orange = new Camel("Orange");
+        yellow = new Camel("Yellow");
+        green = new Camel("Green");
+
+        camels = new List<Camel>();
+
+        camels.Add(blue);
+        camels.Add(white);
+        camels.Add(orange);
+        camels.Add(yellow);
+        camels.Add(green);
+
+        allTraps = new List<Trap>();
+
+        //Parse board
+        string[] subBoard = board.Split(';');
+
+        for (int pos = 0; pos < subBoard.Length; pos++)
+        {
+            Camel lastCamel = null;
+            string line = subBoard[pos];
+
+            for (int j = line.Length - 1; j >= 0; j--)
+            {
+                if (line[j] == '+' || line[j] == '-')
+                {
+                    this.allTraps.Add(new Trap(line[j], pos));
+                }
+                else
+                {
+                    Camel camel = GetCamel(line[j]);
+                    camel.name = FindCamelName(line[j]);
+                    camel.pos = pos;
+                    camel.isDiceRoll = char.IsLower(line[j]);
+                    camel.camelOnTop = lastCamel;
+
+                    lastCamel = camel;
+                }
+            }
+        }
+    }
+
+   #endregion //Constructor
+
+    #region Private Function
+    private List<Camel> GetCamels()
 	{
 		List<Camel> result = new List<Camel>();
 
@@ -245,9 +302,9 @@ public class AllCamels
 		{
 			if (camels[i] != movingCamel && 
 				camels[i].pos == movingCamel.pos && 
-				camels[i].camelsOnTop == null)
+				camels[i].camelOnTop == null)
 			{
-				camels[i].camelsOnTop = movingCamel;
+				camels[i].camelOnTop = movingCamel;
 			}
 		}
 	}
@@ -256,9 +313,9 @@ public class AllCamels
 	{
 		for (int i = 0; i < camels.Count; i++)
 		{
-			if (camels[i].camelsOnTop != null && camels[i].camelsOnTop.name == name)
+			if (camels[i].camelOnTop != null && camels[i].camelOnTop.name == name)
 			{
-				camels[i].camelsOnTop = null;
+				camels[i].camelOnTop = null;
 			}
 		}
 	}
@@ -281,7 +338,7 @@ public class AllCamels
         }
 
         camel.pos--;
-        camel.camelsOnTop = camelPos;
+        camel.camelOnTop = camelPos;
     }
 
 	private void MoveCamel(string name, int dice, bool isFirstCamel = true)
@@ -298,9 +355,9 @@ public class AllCamels
 		
 		IsCamelLandOnAnotherCamel(camel.name);
 
-        if (camel.camelsOnTop != null)
+        if (camel.camelOnTop != null)
 		{
-			MoveCamel(camel.camelsOnTop.name, dice, false);
+			MoveCamel(camel.camelOnTop.name, dice, false);
 		}
 
         IsLandingOnTrap(camel);
@@ -377,7 +434,7 @@ public class AllCamels
 			{
 				Camel currentCamel = remainingCamels[i];
 
-				if(newList.Count > 0 && currentCamel.camelsOnTop == newList[newList.Count - 1])
+				if(newList.Count > 0 && currentCamel.camelOnTop == newList[newList.Count - 1])
 				{
 					//prend le camelOnTop du dernier camel entrer
 					higherCamel = currentCamel;
@@ -386,7 +443,7 @@ public class AllCamels
 				else
 				{
 					//Prend le plus grosse pos + sans camel on top
-					if (currentCamel.camelsOnTop == null && currentCamel.pos > higherCamel.pos)
+					if (currentCamel.camelOnTop == null && currentCamel.pos > higherCamel.pos)
 					{
 						higherCamel = currentCamel;
 					}
@@ -454,8 +511,8 @@ public class AllCamels
 			if (camel.isDiceRoll)
 				camelInfo += "DiceIsRoll ";
 			
-			if (showOnTop && camel.camelsOnTop != null)
-				camelInfo += "sous ->" + camel.camelsOnTop.name + " " ;
+			if (showOnTop && camel.camelOnTop != null)
+				camelInfo += "sous ->" + camel.camelOnTop.name + " " ;
 
 			camelInfo += "\n";
 		}
@@ -483,8 +540,8 @@ public class AllCamels
 
             camelInfo += camel.name + camel.pos;
 
-            if (camel.camelsOnTop != null)
-                camelInfo += "->" + camel.camelsOnTop.name[0] + " ";
+            if (camel.camelOnTop != null)
+                camelInfo += "->" + camel.camelOnTop.name[0] + " ";
 
             camelInfo += " ";
         }
