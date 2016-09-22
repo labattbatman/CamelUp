@@ -80,7 +80,7 @@ public class Board : MonoBehaviour
         }
     }
 
-    public void UpdateCase(int caseNb, string tokens)
+    private void UpdateCase(int caseNb, string tokens)
     {
         foreach(CaseBoard caseboad in cases)
         {          
@@ -88,6 +88,16 @@ public class Board : MonoBehaviour
             {
                 caseboad.UpdateCase(tokens);
             }
+        }
+    }
+
+    private void UpdateBoard(string board)
+    {
+        string[] cases = board.Split(';');
+
+        for(int i = 0; i < cases.Length; i++)
+        {
+            UpdateCase(i, cases[i]);
         }
     }
 
@@ -195,9 +205,10 @@ public class Board : MonoBehaviour
             container.gameObject.SetActive(true);
     }
 
-    private void OnAutoMoveUIClick(char camel, int diceNumber)
+    private void OnAutoMoveUIClick(string camel, int diceNumber)
     {
-        //todo faire ca + visuel dans la scene
-        UnityEngine.Debug.Log(camel + " " + diceNumber);
+        AllCamels currentCamels = new AllCamels(GetBoard());
+        currentCamels.MoveCamel(camel, diceNumber, true);
+        UpdateBoard(currentCamels.GetBoard());
     }
 }

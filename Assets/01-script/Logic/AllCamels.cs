@@ -341,7 +341,7 @@ public class AllCamels
         camel.camelOnTop = camelPos;
     }
 
-	private void MoveCamel(string name, int dice, bool isFirstCamel = true)
+	public void MoveCamel(string name, int dice, bool isFirstCamel = true)
 	{
 		//Debug.Log(string.Format("Je move {0} de {1} et 1erCamel {2}",name,dice,isFirstCamel));
 		Camel camel = GetCamel(name);
@@ -564,6 +564,28 @@ public class AllCamels
         return result.Remove(result.Length -1,1);
     }
 
+    public string GetBoard()
+    {
+        string result = string.Empty;
+        List<Camel> camels = SortCamelInOrderPos();
+
+        result = result.PadLeft(camels[camels.Count - 1].pos, ';');
+        int lastPos = camels[camels.Count - 1].pos;
+
+        for (int i = camels.Count - 1; i >= 0; i--)
+        {
+            int diff = camels[i].pos - lastPos;
+
+            for (int j = 0; j < diff; j++)
+                result += ';';
+
+            result += camels[i].name[0];
+            lastPos = camels[i].pos;
+        }
+
+        return result;
+    }
+
 	#endregion //Public Function
 
 	#region Permutation & Combination
@@ -632,7 +654,6 @@ public class AllCamels
 
         return result;
     }
-
 
     public bool CanPutTrap(int pos)
     {

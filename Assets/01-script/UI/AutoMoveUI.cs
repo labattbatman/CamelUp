@@ -26,10 +26,10 @@ public class AutoMoveUI : MonoBehaviour
     [SerializeField]
     private CustomDropDownMenu camels;
 
-    public Action<char,int> onButtonClick;
+    public Action<string,int> onButtonClick;
 
     private int currentDice;
-    private char currentCamel = ' ';
+    private string currentCamel = String.Empty;
 
     public void Setup()
     {
@@ -63,7 +63,7 @@ public class AutoMoveUI : MonoBehaviour
 
     private void OnDropdownChangeCamles(OptionButton ob)
     {
-        currentCamel = ob.optionType[0];
+        currentCamel = ob.optionType;
 
         camels.UpdateDropDown(ob.optionType);
         camels.ShowContainer(false);
@@ -71,7 +71,7 @@ public class AutoMoveUI : MonoBehaviour
 
     public void OnButtonClick()
     {
-        if (currentDice == 0 || currentCamel == ' ')
+        if (currentDice == 0 || String.IsNullOrEmpty(currentCamel))
         {
             UnityEngine.Debug.LogError("No no no, choose things");
             return;
