@@ -116,6 +116,7 @@ public class Board : MonoBehaviour
         cases.Add(newCase);
 
         newCase.gameObject.transform.SetParent(isFirstRow ? casesTransform[0] : casesTransform[1]);
+        newCase.transform.localScale = Vector3.one;
     }
 
     private void RemoveCase()

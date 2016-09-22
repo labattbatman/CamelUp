@@ -55,6 +55,8 @@ public class CustomDropDownMenu : MonoBehaviour
         {
             GameObject button = Instantiate(optionButtonPrefab);
             button.transform.SetParent(container.transform);
+            button.transform.localScale = Vector3.one;          
+
             OptionButton obt = button.AddComponent<OptionButton>();
             optionButtons.Add(obt);
             obt.Setup(option);
