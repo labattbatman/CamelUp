@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -223,9 +223,9 @@ public class AllRankCount
         return newList;
     }
 
-    public void UpdateCasesVisited(int newPos, Camel camel)
+    public void UpdateCasesVisited(int newPos)
     {
-        if(casesVisited.ContainsKey(newPos))
+        if (casesVisited.ContainsKey(newPos))
         {
             casesVisited[newPos]++;
         }
@@ -252,7 +252,7 @@ public class AllRankCount
             }
         }
 
-        result.equity = (float)result.nbVisite / totalVisite;
+        result.equity = (float)result.nbVisite / (totalVisite / camels.GetUnrollCamelsCount());
 
         return result;
     }

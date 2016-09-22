@@ -378,14 +378,13 @@ public class AllCamels
 	    int diceIndex = 0;
 
         for (int i = 0; i < orderedCamelsForDice.Count; i++)
-		{
+		{         
 		    if (!orderedCamelsForDice[i].isDiceRoll)
-		    {
-                              
+		    {                             
                 MoveCamel(orderedCamelsForDice[i].name, dices[diceIndex]);
 		        diceIndex++;
 
-                ranks.UpdateCasesVisited(orderedCamelsForDice[i].pos, orderedCamelsForDice[i]);
+                ranks.UpdateCasesVisited(orderedCamelsForDice[i].pos);
 		    }
 		}
 	}

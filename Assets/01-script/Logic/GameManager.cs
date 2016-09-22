@@ -1,10 +1,12 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System;
 
 public class GameManager : MonoSingleton<GameManager>
 {
     public StatManager statManager;
     public CashCardManager cashCardManager;
+    public RollDiceManager rollDiceManager;
+
 
     public string CreateBoard(string board, string cardRemaining)
     {
@@ -52,8 +54,12 @@ public class GameManager : MonoSingleton<GameManager>
         if (statManager != null)
             Destroy(statManager);
 
+        if (rollDiceManager != null)
+            Destroy(rollDiceManager);
+
         statManager = new GameObject("StatManager").AddComponent<StatManager>();
         cashCardManager = new GameObject("CashCardManager").AddComponent<CashCardManager>();
+        rollDiceManager = new GameObject("rollDiceManager").AddComponent<RollDiceManager>();
     }
 
     

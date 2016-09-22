@@ -26,10 +26,12 @@ public class Board : MonoBehaviour
 
     private const int NUMBER_OF_CASES = 16;
 
+    private string startingBoard = ";ywo;B;G";
+
     public void Start()
     {
         Setup();
-
+        UpdateBoard(startingBoard);
     }  
 
     public void Setup()
@@ -99,6 +101,12 @@ public class Board : MonoBehaviour
         {
             UpdateCase(i, cases[i]);
         }
+
+        for (int i = 0; i < board.Length; i++)
+        {
+            if(board[i] != ';')
+                SetToggle(board[i]);
+        }
     }
 
     private void CreateCases()
@@ -167,6 +175,25 @@ public class Board : MonoBehaviour
 		
 		default: Debug.LogError("Oh oh spaguatiii-oo"); return false;
 		}
+    }
+
+    private void SetToggle(char camel)
+    {
+        switch (camel)
+        {
+            case 'G': camelToggles[0].isOn = false; break;
+            case 'g': camelToggles[0].isOn = true; break;
+            case 'B': camelToggles[1].isOn = false; break;
+            case 'b': camelToggles[1].isOn = true; break;
+            case 'Y': camelToggles[2].isOn = false; break;
+            case 'y': camelToggles[2].isOn = true; break;
+            case 'W': camelToggles[3].isOn = false; break;
+            case 'w': camelToggles[3].isOn = true; break;
+            case 'O': camelToggles[4].isOn = false; break;
+            case 'o': camelToggles[4].isOn = true; break;
+
+            default: Debug.LogError("Oh oh spaguatiii-oo"); break;
+        }
     }
 
     private string FormatTokenOnCase(string tokens)
