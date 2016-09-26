@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 
@@ -15,7 +15,7 @@ public class CashCardUI : MonoBehaviour
         get { return color.ToString(); }
     }
 
-    private int winForFirst = 5;
+    private int winForFirst = GameRules.WIN_FOR_FIRST[0];
 
     public string WinForFirst
     {
@@ -29,17 +29,21 @@ public class CashCardUI : MonoBehaviour
 
     public void OnClick()
     {
-        switch(winForFirst)
+        for (int i = 0; i < GameRules.WIN_FOR_FIRST.Length; i++)
         {
-            case 5:
-                winForFirst = 3;
+            if (winForFirst == GameRules.WIN_FOR_FIRST[i])
+            {
+                if (i < GameRules.WIN_FOR_FIRST.Length - 1)
+                {
+                    winForFirst = GameRules.WIN_FOR_FIRST[i + 1];
+                }
+                else
+                {
+                    winForFirst = GameRules.WIN_FOR_FIRST[0];
+                }
+
                 break;
-            case 3:
-                winForFirst = 2;
-                break;
-            case 2:
-                winForFirst = 5;
-                break;
+            }
         }
 
         UpdateText();

@@ -11,16 +11,17 @@ public class GameManager : MonoSingleton<GameManager>
         CreateManager();
     }
 
-
     public string CreateBoard(string board, string cardRemaining)
-    {     
-        StatFactory statFactory = new GameObject("StatFactory").AddComponent<StatFactory>(); ;
+    {
+        StatFactory statFactory = CreateStatFactory();
         statFactory.CreateBoard(board);
         statFactory.CestLaQueLaPoutineSePasse();
 
 
         cashCardManager.PopulateCashCards(cardRemaining);
         statFactory.FindEquityCashCard(cashCardManager.GetCashCards());
+
+        rollDiceManager.GetRollDiceEquity(board, cardRemaining);
 
         CashCard highestCard = cashCardManager.HighestCashCard();
         Case highestCase = statFactory.rankCounts.HighestCase(statFactory.initialCamels);
@@ -37,7 +38,6 @@ public class GameManager : MonoSingleton<GameManager>
         return result;
     }
 
-
     //Info Util
     public bool IsCamel(char token)
     {
@@ -45,6 +45,11 @@ public class GameManager : MonoSingleton<GameManager>
             return true;
 
         return false;
+    }
+
+    public StatFactory CreateStatFactory()
+    {
+        return new GameObject("StatFactory").AddComponent<StatFactory>();
     }
 
     private void CreateManager()

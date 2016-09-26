@@ -114,8 +114,9 @@ public class StatFactory : MonoBehaviour
 	{
 		List<List<int>> dice = new List<List<int>>();
 		int numberOfDice = input;
-		const int diceFace = 3;
-		int indexNumber = (int)Math.Pow(diceFace, numberOfDice);
+	    int diceFace = GameRules.DICES_FACES;
+
+        int indexNumber = (int)Math.Pow(diceFace, numberOfDice);
 		int range = (int)Math.Pow(diceFace, numberOfDice) / diceFace;
 
 		for (int i = 0; i < (int)Math.Pow (diceFace, numberOfDice); i++)
