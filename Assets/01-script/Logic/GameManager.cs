@@ -3,24 +3,27 @@ using System;
 
 public class GameManager : MonoSingleton<GameManager>
 {
-    public StatManager statManager;
     public CashCardManager cashCardManager;
     public RollDiceManager rollDiceManager;
 
-
-    public string CreateBoard(string board, string cardRemaining)
+    private void Start()
     {
         CreateManager();
+    }
 
-        statManager.CreateBoard(board);
-        statManager.CestLaQueLaPoutineSePasse();
+
+    public string CreateBoard(string board, string cardRemaining)
+    {     
+        StatFactory statFactory = new GameObject("StatFactory").AddComponent<StatFactory>(); ;
+        statFactory.CreateBoard(board);
+        statFactory.CestLaQueLaPoutineSePasse();
 
 
         cashCardManager.PopulateCashCards(cardRemaining);
-        statManager.FindEquityCashCard(cashCardManager.GetCashCards());
+        statFactory.FindEquityCashCard(cashCardManager.GetCashCards());
 
         CashCard highestCard = cashCardManager.HighestCashCard();
-        Case highestCase = statManager.rankCounts.HighestCase(statManager.initialCamels);
+        Case highestCase = statFactory.rankCounts.HighestCase(statFactory.initialCamels);
 
         string result = cashCardManager.CashCardsInfo();
 
@@ -28,12 +31,10 @@ public class GameManager : MonoSingleton<GameManager>
 
         result += highestCase.Info();
 
-        return result;
-    }
+        if (statFactory != null)
+            Destroy(statFactory);
 
-    public string GetTokensOnCase(int caseNb)
-    {
-        return statManager.GetTokensOnCase(caseNb);
+        return result;
     }
 
 
@@ -47,19 +48,15 @@ public class GameManager : MonoSingleton<GameManager>
     }
 
     private void CreateManager()
-    {
-        if (statManager != null)
-            Destroy(statManager);
-
-        if (statManager != null)
-            Destroy(statManager);
+    {     
+        if (cashCardManager != null)
+            Destroy(cashCardManager);
 
         if (rollDiceManager != null)
             Destroy(rollDiceManager);
 
-        statManager = new GameObject("StatManager").AddComponent<StatManager>();
         cashCardManager = new GameObject("CashCardManager").AddComponent<CashCardManager>();
-        rollDiceManager = new GameObject("rollDiceManager").AddComponent<RollDiceManager>();
+        rollDiceManager = new GameObject("RollDiceManager").AddComponent<RollDiceManager>();
     }
 
     
