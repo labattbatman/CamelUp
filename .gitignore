@@ -45,6 +45,7 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+<<<<<<< HEAD
 Library
 ProjectSettings
 *.csproj
@@ -53,6 +54,8 @@ CamelUp.CSharp.csproj
 /Temp/
 *.suo
 .vs/CamelUp/v14/.suo
+=======
+>>>>>>> 79f01b544dcaae1b19886693e289e3b83f996cc5
 ShaderCache\
 *.info
 Library
@@ -91,4 +94,8 @@ sysinfo.txt
 temp/
 Temp/
 *.suo
+<<<<<<< HEAD
 CamelUp.CSharp.csproj
+=======
+CamelUp.CSharp.csproj
+>>>>>>> 79f01b544dcaae1b19886693e289e3b83f996cc5
