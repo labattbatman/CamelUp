@@ -26,7 +26,7 @@ public class Board : MonoBehaviour
 
     private const int NUMBER_OF_CASES = 16;
 
-    private string startingBoard = ";ywo;B;G";
+    private string startingBoard = ";;ywo;B;G";
 
     public void Start()
     {
