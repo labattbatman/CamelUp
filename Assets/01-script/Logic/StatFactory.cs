@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 
-public class StatFactory : MonoBehaviour
+public class StatFactory
 {
     public static bool isBugged = false;
 		

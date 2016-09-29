@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -57,7 +57,7 @@ public struct CashCard
     }
 }
 
-public class CashCardManager : MonoBehaviour
+public class CashCardManager
 {
     private List<CashCard> cashCards = new List<CashCard>();
 

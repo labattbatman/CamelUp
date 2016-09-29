@@ -3,20 +3,14 @@ using System;
 
 public class GameManager : MonoSingleton<GameManager>
 {
-    public CashCardManager cashCardManager;
-    public RollDiceManager rollDiceManager;
-
-    private void Start()
-    {
-        CreateManager();
-    }
-
     public string CreateBoard(string board, string cardRemaining)
     {
-        StatFactory statFactory = CreateStatFactory();
+        StatFactory statFactory = new StatFactory();
         statFactory.CreateBoard(board);
         statFactory.CestLaQueLaPoutineSePasse();
 
+        CashCardManager cashCardManager = new CashCardManager();
+        RollDiceManager rollDiceManager = new RollDiceManager();
 
         cashCardManager.PopulateCashCards(cardRemaining);
         statFactory.FindEquityCashCard(cashCardManager.GetCashCards());
@@ -32,9 +26,6 @@ public class GameManager : MonoSingleton<GameManager>
 
         result += highestCase.Info();
 
-        if (statFactory != null)
-            Destroy(statFactory);
-
         return result;
     }
 
@@ -45,24 +36,5 @@ public class GameManager : MonoSingleton<GameManager>
             return true;
 
         return false;
-    }
-
-    public StatFactory CreateStatFactory()
-    {
-        return new GameObject("StatFactory").AddComponent<StatFactory>();
-    }
-
-    private void CreateManager()
-    {     
-        if (cashCardManager != null)
-            Destroy(cashCardManager);
-
-        if (rollDiceManager != null)
-            Destroy(rollDiceManager);
-
-        cashCardManager = new GameObject("CashCardManager").AddComponent<CashCardManager>();
-        rollDiceManager = new GameObject("RollDiceManager").AddComponent<RollDiceManager>();
-    }
-
-    
+    }   
 }
