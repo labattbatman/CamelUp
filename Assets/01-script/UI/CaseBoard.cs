@@ -113,8 +113,8 @@ public class CaseBoard : MonoBehaviour
 
     private bool IsTokenOnCase(char token)
     {
-        return tokensOnCase.Contains(token);
-    }
+        return tokensOnCase.Contains(char.ToUpperInvariant(token)) || tokensOnCase.Contains(char.ToLowerInvariant(token));
+    }  
 
     private string TokensToString()
     {
@@ -151,11 +151,12 @@ public class CaseBoard : MonoBehaviour
 
     public void RemoveToken(char oldToken)
     {
-        if (tokensOnCase.Contains(oldToken))
+        if (IsTokenOnCase(oldToken))
         {
-            tokensOnCase.Remove(oldToken);
+            tokensOnCase.Remove(char.ToLowerInvariant(oldToken));
+            tokensOnCase.Remove(char.ToUpperInvariant(oldToken));
 
-            if(GameManager.Instance.IsCamel(oldToken))
+            if (GameManager.Instance.IsCamel(oldToken))
                 UIManager.Instance.Board.RepoolCamel(oldToken);
 
             UpdateCaseBoardVisual();
@@ -190,7 +191,7 @@ public class CaseBoard : MonoBehaviour
     {
         if (GameManager.Instance.IsCamel(token))
         {
-            GameObject go = UIManager.Instance.Board.GetCamel(token);
+            GameObject go = UIManager.Instance.Board.GetCamelToken(token);
             go.transform.position = camelPos[pos].transform.position;
             go.transform.SetParent(transform);
         }

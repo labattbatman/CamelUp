@@ -11,30 +11,34 @@ using System.Linq;
 
 
 public class RollDiceManager : MonoBehaviour
-{   
+{
+    private float equity;
+
+    public float Equity
+    {
+        get { return equity; }
+    }
+
     public void GetRollDiceEquity(string board, string remainingCard)
     {       
+        //il va avoir un bug quand il reste un des à jouer car il faut remettre tous les camels à isrolldice = false;
         AllCamels originAllCamels = new AllCamels(board);
+        List<AllCamels> test = originAllCamels.GetAllPossibleCamelsNextDice();
 
-        List<Camel> unRollCamels = originAllCamels.GetUnrollCamels().ToList();
-        /*
-        UnityEngine.Debug.LogWarning(board);
-        foreach (var unRollCamel in unRollCamels)
-        {
-            for (int dice = 0; dice < GameRules.DICES_FACES; dice++)
-            {
-                AllCamels tempCamels = new AllCamels(board);
-                tempCamels.MoveCamel(unRollCamel.name, dice);
+        for (int i = 0; i < test.Count; i++)
+        {            
+            return;
 
-                StatFactory statFactory =new StatFactory();
-                statFactory.CreateBoard(board);
-                statFactory.CestLaQueLaPoutineSePasse();
+            float t = Time.realtimeSinceStartup;
+            Result result = new Result();
 
+            //todo mettre cash card = 0
+            //todo tres tres lent à calculer essayer un forloop
+            //juste faire ca quand lev des autres est moins de 1
+            result.CreateResult(test[i].GetBoard(), remainingCard, false);
 
-                //cashCardManager.PopulateCashCards(cardRemaining);
-                //statFactory.FindEquityCashCard(cashCardManager.GetCashCards());
-            }                    
-        }*/
+            Debug.Log(i + " :" + (Time.realtimeSinceStartup - t));
+        }
     }
 	
 }

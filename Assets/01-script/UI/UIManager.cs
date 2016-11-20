@@ -17,7 +17,7 @@ public class UIManager : MonoSingleton<UIManager>
     public Board Board
     {
         get { return board; }
-    }
+    }    
 
     public void TakeDecision()
     {

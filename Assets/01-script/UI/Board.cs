@@ -22,6 +22,9 @@ public class Board : MonoBehaviour
     [SerializeField]
     private AutoMoveUI autoMoveUI;
 
+    [SerializeField]
+    private Text boardText;
+
     private List<CaseBoard> cases = new List<CaseBoard>();
 
     private const int NUMBER_OF_CASES = 16;
@@ -36,13 +39,13 @@ public class Board : MonoBehaviour
 
     public void Setup()
     {
-        camelInitPos = GetCamel('W').transform.position;
+        camelInitPos = GetCamelToken('W').transform.position;
         CreateCases();
         autoMoveUI.Setup();
         autoMoveUI.onButtonClick += OnAutoMoveUIClick;
     }
 
-    public GameObject GetCamel(char aCamelName)
+    public GameObject GetCamelToken(char aCamelName)
     {
         int camel = -1;
         switch (aCamelName)
@@ -64,11 +67,9 @@ public class Board : MonoBehaviour
 
     public void RepoolCamel(char aCamelName)
     {
-        GameObject camel = GetCamel(aCamelName);
+        GameObject camel = GetCamelToken(aCamelName);
         camel.transform.position = camelInitPos;
-        camel.transform.SetParent(transform);
-
-        
+        camel.transform.SetParent(transform);      
     }
 
     public void RemoveCamelFromAnotherCase(char aCamelName)
@@ -238,5 +239,15 @@ public class Board : MonoBehaviour
         AllCamels currentCamels = new AllCamels(GetBoard());
         currentCamels.MoveCamel(camel, diceNumber, true);
         UpdateBoard(currentCamels.GetBoard());
+    }
+
+    private void UpdateBoardText(string board)
+    {
+        boardText.text = board;
+    }
+
+    private void Update()
+    {
+        UpdateBoardText(GetBoard());
     }
 }

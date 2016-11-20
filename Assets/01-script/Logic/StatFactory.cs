@@ -110,7 +110,7 @@ public class StatFactory
         return ranks;
     }
 
-	List<List<int>> DicesCombinationsPossible(int input)
+	public static List<List<int>> DicesCombinationsPossible(int input)
 	{
 		List<List<int>> dice = new List<List<int>>();
 		int numberOfDice = input;

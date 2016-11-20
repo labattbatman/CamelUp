@@ -378,15 +378,18 @@ public class AllCamels
 	    int diceIndex = 0;
 
         for (int i = 0; i < orderedCamelsForDice.Count; i++)
-		{         
-		    if (!orderedCamelsForDice[i].isDiceRoll)
-		    {                             
+        {
+            if (!orderedCamelsForDice[i].isDiceRoll)
+            {
                 MoveCamel(orderedCamelsForDice[i].name, dices[diceIndex]);
-		        diceIndex++;
+                diceIndex++;
 
-                ranks.UpdateCasesVisited(orderedCamelsForDice[i].pos);
-		    }
-		}
+                if (ranks != null)
+                {
+                    ranks.UpdateCasesVisited(orderedCamelsForDice[i].pos);
+                }
+            }
+        }       
 	}
 
     private bool IsLandingOnTrap(Camel camel)
@@ -580,6 +583,25 @@ public class AllCamels
 
             result += camels[i].name[0];
             lastPos = camels[i].pos;
+        }
+
+        return result;
+    }
+
+    public List<AllCamels> GetAllPossibleCamelsNextDice()
+    {
+        List<AllCamels> result = new List<AllCamels>();
+        List<List<int>> dices = StatFactory.DicesCombinationsPossible(GetUnrollCamelsCount());
+        List<AllCamels> allPermutations = AllUnrollCamelsPermutation();
+
+        foreach (var permu in allPermutations)
+        {
+            foreach (List<int> d in dices)
+            {
+                AllCamels tempCamels = new AllCamels(permu);
+                tempCamels.MoveCamels(d, null);
+                result.Add(tempCamels);
+            }
         }
 
         return result;
