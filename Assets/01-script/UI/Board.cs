@@ -22,14 +22,15 @@ public class Board : MonoBehaviour
     [SerializeField]
     private AutoMoveUI autoMoveUI;
 
+    private List<CaseBoard> cases = new List<CaseBoard>();
+
     [SerializeField]
     private Text boardText;
-
-    private List<CaseBoard> cases = new List<CaseBoard>();
 
     private const int NUMBER_OF_CASES = 16;
 
     private string startingBoard = ";;ywo;B;G";
+	private string emptyBoard = ";;;;;;";
 
     public void Start()
     {
@@ -43,6 +44,20 @@ public class Board : MonoBehaviour
         CreateCases();
         autoMoveUI.Setup();
         autoMoveUI.onButtonClick += OnAutoMoveUIClick;
+    }
+
+    public void ResetBoard()
+	{
+		UpdateBoard(emptyBoard);
+	}
+
+    public void RemoveTrap()
+    {
+        Debug.Log(GetBoard());
+        string board = GetBoard().Replace('+', '\0');
+        board = board.Replace('-', '\0');
+        Debug.Log(board);
+        UpdateBoard(board);
     }
 
     public GameObject GetCamelToken(char aCamelName)

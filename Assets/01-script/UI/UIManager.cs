@@ -17,7 +17,7 @@ public class UIManager : MonoSingleton<UIManager>
     public Board Board
     {
         get { return board; }
-    }    
+    }
 
     public void TakeDecision()
     {
@@ -26,6 +26,16 @@ public class UIManager : MonoSingleton<UIManager>
         string result = GameManager.Instance.CreateBoard(boardInfo, remainingCards);
 
         resultText.text = result;
+    }
+	
+	public void ResetBoard()
+	{
+		board.ResetBoard();
+	}
+
+    public void RemoveTrap()
+    {
+        board.RemoveTrap();
     }
 
     public void ResetCashCards()
