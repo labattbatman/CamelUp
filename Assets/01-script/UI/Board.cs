@@ -170,7 +170,8 @@ public class Board : MonoBehaviour
         {
             result += FormatTokenOnCase(caseboard.TokensOnCase) + ";";
         }
-
+        result = result.Replace('P', '+');
+        result = result.Replace('M', '-');
         return result;
     }
 

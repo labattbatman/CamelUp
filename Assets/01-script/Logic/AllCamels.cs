@@ -177,7 +177,7 @@ public class AllCamels
         camels.Add(green);
 
         allTraps = new List<Trap>();
-
+        
         //Parse board
         string[] subBoard = board.Split(';');
 
@@ -236,7 +236,7 @@ public class AllCamels
 		case 'o': return "Orange";
 		case 'Y': return "Yellow";
 		case 'y': return "Yellow";
-		default: return "Unknow Camel";
+		default: return "Unknow Camel" + color;
 		}
 	}
 

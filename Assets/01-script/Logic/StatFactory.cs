@@ -29,9 +29,9 @@ public class StatFactory
 			rankCounts = MoveWithAllDicesCombo (permu, rankCounts);
 		}
        
-		//rankCounts.InfoRankCount ();
+		rankCounts.InfoRankCount ();
 
-        //WriteInfoInFile("Result",LogRankToInfo(initialCamels.InfoCamel(), DicesCombinationsPossible(initialCamels.GetUnrollCamelsCount())));
+        WriteInfoInFile("Result",LogRankToInfo(initialCamels.InfoCamel(), DicesCombinationsPossible(initialCamels.GetUnrollCamelsCount())));
     }
 
     //Get Initial information
